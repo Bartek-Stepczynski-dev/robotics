@@ -1,0 +1,81 @@
+#include <Servo.h>
+Servo servo;
+
+int servoAngle;
+int counter = 0;
+int joystickValueX;
+int newCount = 20;// licznik co ile wyswietla informacje uzytnikowi
+int button;
+float currentAngle;
+float krokRampy;
+int aktualnytryb = 0; // 0-normalny tryb , 1-precyzyjny tryb
+int ostatnitryb = HIGH; // na starcie przycisk jest puszczony
+
+
+void SmCounter(){
+  counter++;
+if (counter >= newCount){
+ 
+  Serial.print(" Joystick Value OX: ");
+  Serial.println(joystickValueX);
+  Serial.print(" Kąt: ");
+  Serial.println(servoAngle);
+   counter = 0 ;
+  }
+}
+void setup() {
+  Serial.begin(9600);
+  servo.attach(7);
+  pinMode(2,INPUT_PULLUP);
+  currentAngle = 90;
+  }
+
+void loop() {
+joystickValueX = analogRead(A0); 
+int ButtonOdczyt = digitalRead(2);
+
+if (ButtonOdczyt == LOW){
+servoAngle = 90;
+}
+
+else if (joystickValueX >= 490 && joystickValueX<=515) { // martwa strefa
+      servoAngle = 90;
+}
+else {
+       servoAngle = map(joystickValueX,0,1023,0,180);
+}
+
+
+
+if (ButtonOdczyt == LOW && ostatnitryb == HIGH){
+aktualnytryb = !aktualnytryb;
+}
+
+
+
+if (aktualnytryb == 1){
+krokRampy = 0.2;
+} else {
+  krokRampy = 1.0;
+}
+
+
+
+
+if (currentAngle < servoAngle ){
+        currentAngle += krokRampy ;
+}
+else if (currentAngle > servoAngle ){
+        currentAngle -= krokRampy ;
+}
+ 
+
+
+
+
+SmCounter();
+servo.write(currentAngle); 
+ostatnitryb = ButtonOdczyt;
+
+delay(15);
+}
